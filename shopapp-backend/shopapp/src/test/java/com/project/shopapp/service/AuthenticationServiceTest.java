@@ -73,8 +73,8 @@ public class AuthenticationServiceTest {
 
         introspectRequest = IntrospectRequest.builder()
                 .token("eyJhbGciOiJIUzUxMiJ9" +
-                        ".eyJpc3MiOiJoaWV1LmNvbSIsInN1YiI6ImFkbWluIiwiZXhwIjoxNzQzOTM1MjMwLCJpYXQiOjE3NDM5MzE2MzAsImp0aSI6IjkyMWZjNzg2LTJkMjUtNDAxMi1hNzBkLTEzZDQ0ZTQ3NWNlYyIsInNjb3BlIjoiUk9MRV9BRE1JTiBST0xFX1VTRVIifQ" +
-                        "._IIxoWSz7Madzo8Yo3jVNdxowkPhpS77tXBCaI5q_FgRC-UuJlBFVglB-k8TxMEKn0NPlsRUH8T3rnD8EWl-qA")
+                        ".eyJpc3MiOiJoaWV1LmNvbSIsInN1YiI6ImFkbWluIiwiZXhwIjoxNzQ0MDM5MjI0LCJpYXQiOjE3NDQwMzU2MjQsImp0aSI6ImU0MDMyYjYyLTI5ZDctNDAwNC1hOGZhLTdlMDEzMjVmZTZlMyIsInNjb3BlIjoiUk9MRV9BRE1JTiBST0xFX1VTRVIifQ" +
+                        ".2FCL5CT4Ki7btfW-R3ZTx458uDL-hlTViWJdF9lEjrCuG7Yteikxqpn8shn4HgmKniTsN5lRoPZekA7JStKqpg")
                 .build();
 
         introspectResponse = IntrospectResponse.builder()
@@ -83,14 +83,14 @@ public class AuthenticationServiceTest {
 
         logoutRequest = LogoutRequest.builder()
                 .token("eyJhbGciOiJIUzUxMiJ9" +
-                        ".eyJpc3MiOiJoaWV1LmNvbSIsInN1YiI6ImFkbWluIiwiZXhwIjoxNzQzOTA4MjkwLCJpYXQiOjE3NDM5MDQ2OTAsImp0aSI6IjVhNDBiNzVjLTJkMzctNGEzYi05NDEwLTQ0NmU1NWZmYjM0MSIsInNjb3BlIjoiUk9MRV9VU0VSIFJPTEVfQURNSU4ifQ" +
-                        ".zmJebIJ9hb5lg-bi8CofoorNVgZSBArW0Rpamuugighrf76rfTrCkgq0SwtjD5Bp43p4_EqdVMIsRJDL2ZwLmw")
+                        ".eyJpc3MiOiJoaWV1LmNvbSIsInN1YiI6ImFkbWluIiwiZXhwIjoxNzQ0MDM5MjI0LCJpYXQiOjE3NDQwMzU2MjQsImp0aSI6ImU0MDMyYjYyLTI5ZDctNDAwNC1hOGZhLTdlMDEzMjVmZTZlMyIsInNjb3BlIjoiUk9MRV9BRE1JTiBST0xFX1VTRVIifQ" +
+                        ".2FCL5CT4Ki7btfW-R3ZTx458uDL-hlTViWJdF9lEjrCuG7Yteikxqpn8shn4HgmKniTsN5lRoPZekA7JStKqpg")
                 .build();
 
         refreshRequest = RefreshRequest.builder()
                 .token("eyJhbGciOiJIUzUxMiJ9" +
-                        ".eyJpc3MiOiJoaWV1LmNvbSIsInN1YiI6ImFkbWluIiwiZXhwIjoxNzQzOTA4MjkwLCJpYXQiOjE3NDM5MDQ2OTAsImp0aSI6IjVhNDBiNzVjLTJkMzctNGEzYi05NDEwLTQ0NmU1NWZmYjM0MSIsInNjb3BlIjoiUk9MRV9VU0VSIFJPTEVfQURNSU4ifQ" +
-                        ".zmJebIJ9hb5lg-bi8CofoorNVgZSBArW0Rpamuugighrf76rfTrCkgq0SwtjD5Bp43p4_EqdVMIsRJDL2ZwLmw")
+                        ".eyJpc3MiOiJoaWV1LmNvbSIsInN1YiI6ImFkbWluIiwiZXhwIjoxNzQ0MDM5MjI0LCJpYXQiOjE3NDQwMzU2MjQsImp0aSI6ImU0MDMyYjYyLTI5ZDctNDAwNC1hOGZhLTdlMDEzMjVmZTZlMyIsInNjb3BlIjoiUk9MRV9BRE1JTiBST0xFX1VTRVIifQ" +
+                        ".2FCL5CT4Ki7btfW-R3ZTx458uDL-hlTViWJdF9lEjrCuG7Yteikxqpn8shn4HgmKniTsN5lRoPZekA7JStKqpg")
                 .build();
 
         invalidatedToken = InvalidatedToken.builder()

@@ -112,6 +112,7 @@ public class UserService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse updateUserStatus(Long userId) {
+        log.info("In method updateUserStatus");
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
