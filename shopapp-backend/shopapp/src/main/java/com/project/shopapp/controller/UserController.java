@@ -13,9 +13,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -53,9 +58,23 @@ public class UserController {
             @RequestParam(defaultValue = "", required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
-    ){
+    ) {
         return ApiResponse.<Page<UserResponse>>builder()
                 .result(userService.searchUsers(keyword, page, size))
+                .build();
+    }
+
+    @GetMapping("/find-by-querydsl")
+    ApiResponse<Page<UserResponse>> findUsersByQuerydsl(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) Long roleId,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ApiResponse.<Page<UserResponse>>builder()
+                .result(userService.findUsersByQuerydsl(keyword, isActive, startDate, endDate, roleId, pageable))
                 .build();
     }
 
@@ -67,28 +86,28 @@ public class UserController {
     }
 
     @GetMapping("/my-info")
-    ApiResponse<UserResponse> getMyInfo(){
+    ApiResponse<UserResponse> getMyInfo() {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getMyInfo())
                 .build();
     }
 
     @PutMapping("/{userId}")
-    ApiResponse<UserResponse> updateUser(@PathVariable Long userId, @RequestBody @Valid UserUpdateRequest request){
+    ApiResponse<UserResponse> updateUser(@PathVariable Long userId, @RequestBody @Valid UserUpdateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.updateUser(userId, request))
                 .build();
     }
 
     @PatchMapping("/status/{userId}")
-    ApiResponse<UserResponse> updateUserStatus(@PathVariable Long userId){
+    ApiResponse<UserResponse> updateUserStatus(@PathVariable Long userId) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.updateUserStatus(userId))
                 .build();
     }
 
     @PatchMapping("/roles/{userId}")
-    ApiResponse<UserResponse> updateUserRoles(@PathVariable Long userId, @RequestBody UserRolesUpdateRequest request){
+    ApiResponse<UserResponse> updateUserRoles(@PathVariable Long userId, @RequestBody UserRolesUpdateRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.updateUserRoles(userId, request))
                 .build();

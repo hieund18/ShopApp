@@ -9,6 +9,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +41,20 @@ public class ProductController {
                 .build();
     }
 
+    @GetMapping("/find-by-querydsl")
+    ApiResponse<Page<ProductResponse>> findProductsByQuerydsl(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Float fromPrice,
+            @RequestParam(required = false) Float toPrice,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) Long categoryId,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .result(productService.findProductsByQuerydsl(keyword, fromPrice, toPrice, isActive, categoryId, pageable))
+                .build();
+    }
+
     @GetMapping("/{productId}")
     ApiResponse<ProductResponse> getProduct(@PathVariable Long productId) {
         return ApiResponse.<ProductResponse>builder()
@@ -53,7 +70,7 @@ public class ProductController {
     }
 
     @PatchMapping("/status/{productId}")
-    ApiResponse<ProductResponse> updateProductStatus(@PathVariable Long productId){
+    ApiResponse<ProductResponse> updateProductStatus(@PathVariable Long productId) {
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.updateProductStatus(productId))
                 .build();

@@ -65,7 +65,14 @@ public class ProductService {
     public Page<ProductResponse> getProductsByKeyword(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        return productRepository.findByKeyword(keyword ,pageable).map(productMapper::toProductResponse);
+        return productRepository.findByKeyword(keyword, pageable).map(productMapper::toProductResponse);
+    }
+
+    public Page<ProductResponse> findProductsByQuerydsl(String keyword, Float fromPrice, Float toPrice,
+                                                        Boolean isActive, Long categoryId, Pageable pageable)
+    {
+        return productRepository.findProductsByQuerydsl(keyword, fromPrice, toPrice, categoryId, isActive, pageable)
+                .map(productMapper::toProductResponse);
     }
 
     public ProductResponse getProduct(Long productId) {

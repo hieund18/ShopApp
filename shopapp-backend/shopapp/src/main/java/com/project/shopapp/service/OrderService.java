@@ -109,6 +109,15 @@ public class OrderService {
         return orderRepository.findAll(orderSpecification, pageable).map(orderMapper::toOrderResponse);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<OrderResponse> findOrdersByQuerydsl(String keyword, Float totalMoneyFrom, Float totalMoneyTo, LocalDate startDate,
+                                                    LocalDate endDate, String status, Boolean isActive, Long userId, Pageable pageable)
+    {
+        return orderRepository
+                .findOrdersByQuerydsl(keyword, totalMoneyFrom, totalMoneyTo, startDate, endDate, isActive, status, userId, pageable)
+                .map(orderMapper::toOrderResponse);
+    }
+
     public Page<OrderResponse> getMyOrders(int page, int limit) {
         var phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
 

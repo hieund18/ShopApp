@@ -563,4 +563,48 @@ public class UserControllerTest {
                 .andExpect(jsonPath("message").value("User not existed"));
 
     }
+
+    @Test
+    @WithMockUser(username = "hoa")
+    void getUser_validRequest_success() throws Exception {
+        // GIVEN
+        Long userId = 1L;
+        when(userService.getUser(anyLong())).thenReturn(userResponse);
+
+        // WHEN, THEN
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/users/{userId}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("code").value(1000))
+                .andExpect(jsonPath("result.id").value(1))
+                .andExpect(jsonPath("result.fullName").value("Nguyen Hoa"));
+    }
+
+    @Test
+    @WithMockUser(username = "hoa")
+    void getUser_userNotFound_fail() throws Exception {
+        // GIVEN
+        when(userService.getUser(anyLong())).thenThrow(new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // WHEN, THEN
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/users/{userId}", 1))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("code").value(1406))
+                .andExpect(jsonPath("message").value("User not existed"));
+
+    }
+
+    @Test
+    void getUser_unauthenticated_fail() throws Exception {
+        // GIVEN
+
+        // WHEN, THEN
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/users/{userId}", 1))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("code").value(1901))
+                .andExpect(jsonPath("message").value("Unauthenticated"));
+
+    }
 }

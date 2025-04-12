@@ -27,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 
@@ -77,6 +78,14 @@ public class UserService {
         Specification<User> userSpecification = UserSpecification.searchByKeyword(keyword);
 
         return userRepository.findAll(userSpecification, pageable).map(userMapper::toUserResponse);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public Page<UserResponse> findUsersByQuerydsl(String keyword, Boolean isActive, LocalDate startDate,
+                                                  LocalDate endDate, Long roleId, Pageable pageable
+    ) {
+        return userRepository.findUsersByQuerydsl(keyword, isActive, startDate, endDate, roleId, pageable)
+                .map(userMapper::toUserResponse);
     }
 
     @PostAuthorize("hasRole('ADMIN') or returnObject.phoneNumber == authentication.name")

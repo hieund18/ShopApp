@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
+public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order>, OrderRepositoryCustom {
     Page<Order> findAll(Pageable pageable);
 
     Page<Order> findAllByUser(User user, Pageable pageable);

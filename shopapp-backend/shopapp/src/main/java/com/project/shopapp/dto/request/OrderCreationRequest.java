@@ -16,7 +16,7 @@ public class OrderCreationRequest {
 
     String email;
 
-    @NotBlank(message = "PHONE_NUMBER_NOT_BLANK")
+//    @NotBlank(message = "PHONE_NUMBER_NOT_BLANK")
     @Pattern(regexp = "^[0-9]{10}$", message = "INVALID_PHONE_NUMBER")
     String phoneNumber;
 
