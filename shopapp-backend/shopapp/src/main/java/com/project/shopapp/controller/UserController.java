@@ -1,12 +1,13 @@
 package com.project.shopapp.controller;
 
+import java.time.LocalDate;
+
 import com.project.shopapp.dto.request.UserCreationRequest;
 import com.project.shopapp.dto.request.UserRolesUpdateRequest;
 import com.project.shopapp.dto.request.UserUpdateRequest;
 import com.project.shopapp.dto.response.ApiResponse;
 import com.project.shopapp.dto.response.UserResponse;
 import com.project.shopapp.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -40,9 +38,7 @@ public class UserController {
 
     @GetMapping
     ApiResponse<Page<UserResponse>> getUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         log.info("phoneNumber: {}", authentication.getName());
@@ -57,8 +53,7 @@ public class UserController {
     ApiResponse<Page<UserResponse>> searchUsers(
             @RequestParam(defaultValue = "", required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         return ApiResponse.<Page<UserResponse>>builder()
                 .result(userService.searchUsers(keyword, page, size))
                 .build();
@@ -71,8 +66,7 @@ public class UserController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) Long roleId,
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.<Page<UserResponse>>builder()
                 .result(userService.findUsersByQuerydsl(keyword, isActive, startDate, endDate, roleId, pageable))
                 .build();

@@ -1,5 +1,10 @@
 package com.project.shopapp.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.shopapp.dto.request.OrderCreationRequest;
 import com.project.shopapp.dto.response.OrderResponse;
@@ -17,11 +22,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -73,8 +73,7 @@ public class OrderControllerTest {
         when(orderService.createOrder(any())).thenReturn(orderResponse);
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/orders")
+        mockMvc.perform(MockMvcRequestBuilders.post("/orders")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isOk())
@@ -92,8 +91,7 @@ public class OrderControllerTest {
         String content = objectMapper.writeValueAsString(request);
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/orders")
+        mockMvc.perform(MockMvcRequestBuilders.post("/orders")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isBadRequest())
@@ -106,8 +104,7 @@ public class OrderControllerTest {
         // GIVEN
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/orders"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/orders"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("code").value(1901))
                 .andExpect(jsonPath("message").value("Unauthenticated"));
@@ -123,8 +120,7 @@ public class OrderControllerTest {
         when(orderService.createOrder(any())).thenThrow(new AppException(ErrorCode.USER_NOT_EXISTED));
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/orders")
+        mockMvc.perform(MockMvcRequestBuilders.post("/orders")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isNotFound())

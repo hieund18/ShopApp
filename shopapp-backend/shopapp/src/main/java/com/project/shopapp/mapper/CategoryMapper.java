@@ -12,5 +12,5 @@ public interface CategoryMapper {
 
     CategoryResponse toCategoryResponse(Category category);
 
-    Category updateCategory(@MappingTarget Category category, CategoryRequest request);
+    void updateCategory(@MappingTarget Category category, CategoryRequest request);
 }

@@ -1,5 +1,7 @@
 package com.project.shopapp.service;
 
+import java.util.List;
+
 import com.project.shopapp.dto.request.ProductRequest;
 import com.project.shopapp.dto.response.ProductResponse;
 import com.project.shopapp.entity.Cart;
@@ -24,8 +26,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
@@ -40,18 +40,18 @@ public class ProductService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse createProduct(ProductRequest request) {
-        if (productRepository.existsByName(request.getName()))
-            throw new AppException(ErrorCode.PRODUCT_EXISTED);
+        if (productRepository.existsByName(request.getName())) throw new AppException(ErrorCode.PRODUCT_EXISTED);
 
         Product product = productMapper.toProduct(request);
 
-        Category category = categoryRepository.findById(request.getCategory())
+        Category category = categoryRepository
+                .findById(request.getCategory())
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
 
         product.setCategory(category);
 
         String imageUrl = "";
-        //Neu user khong gui file nhung van tich truong files thi khong null -> can isEmpty(): true
+        // Neu user khong gui file nhung van tich truong files thi khong null -> can isEmpty(): true
         if (request.getThumbnail() != null && !request.getThumbnail().isEmpty())
             imageUrl = fileStorageService.storeFile(request.getThumbnail());
 
@@ -68,24 +68,27 @@ public class ProductService {
         return productRepository.findByKeyword(keyword, pageable).map(productMapper::toProductResponse);
     }
 
-    public Page<ProductResponse> findProductsByQuerydsl(String keyword, Float fromPrice, Float toPrice,
-                                                        Boolean isActive, Long categoryId, Pageable pageable)
-    {
-        return productRepository.findProductsByQuerydsl(keyword, fromPrice, toPrice, categoryId, isActive, pageable)
+    public Page<ProductResponse> findProductsByQuerydsl(
+            String keyword, Float fromPrice, Float toPrice, Boolean isActive, Long categoryId, Pageable pageable) {
+        return productRepository
+                .findProductsByQuerydsl(keyword, fromPrice, toPrice, categoryId, isActive, pageable)
                 .map(productMapper::toProductResponse);
     }
 
     public ProductResponse getProduct(Long productId) {
-        return productMapper.toProductResponse(productRepository.findById(productId)
+        return productMapper.toProductResponse(productRepository
+                .findById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED)));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse updateProduct(Long productId, ProductRequest request) {
-        Product product = productRepository.findById(productId)
+        Product product = productRepository
+                .findById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-        Category category = categoryRepository.findById(request.getCategory())
+        Category category = categoryRepository
+                .findById(request.getCategory())
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
 
         if (!product.getName().equals(request.getName()) && productRepository.existsByName(request.getName()))
@@ -118,7 +121,8 @@ public class ProductService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ProductResponse updateProductStatus(Long productId) {
-        Product product = productRepository.findById(productId)
+        Product product = productRepository
+                .findById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
         product.setIsActive(!product.getIsActive());

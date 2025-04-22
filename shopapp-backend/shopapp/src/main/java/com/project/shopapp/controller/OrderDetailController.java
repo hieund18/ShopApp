@@ -1,5 +1,7 @@
 package com.project.shopapp.controller;
 
+import java.util.List;
+
 import com.project.shopapp.dto.request.OrderDetailCreationRequest;
 import com.project.shopapp.dto.request.OrderDetailUpdateRequest;
 import com.project.shopapp.dto.response.ApiResponse;
@@ -11,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/orderDetails")
@@ -39,8 +39,7 @@ public class OrderDetailController {
     ApiResponse<Page<OrderDetailResponse>> getOrderDetailsByOrderId(
             @PathVariable Long orderId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit
-    ) {
+            @RequestParam(defaultValue = "10") int limit) {
         return ApiResponse.<Page<OrderDetailResponse>>builder()
                 .result(orderDetailService.getOrderDetailsByOrderId(orderId, page, limit))
                 .build();
@@ -54,7 +53,8 @@ public class OrderDetailController {
     }
 
     @PutMapping("/{id}")
-    ApiResponse<OrderDetailResponse> updateOrderDetail(@PathVariable Long id, @RequestBody @Valid OrderDetailUpdateRequest request) {
+    ApiResponse<OrderDetailResponse> updateOrderDetail(
+            @PathVariable Long id, @RequestBody @Valid OrderDetailUpdateRequest request) {
         return ApiResponse.<OrderDetailResponse>builder()
                 .result(orderDetailService.updateOrderDetail(id, request))
                 .build();

@@ -1,0 +1,56 @@
+# create image:
+docker build -t hieund18/shop-app:0.0.1 .
+
+# push image to Docker Hub:
+docker push hieund18/shop-app:0.0.1
+
+# pull image:
+docker pull hieund18/shop-app:0.0.1
+
+# list network:
+docker network ls
+
+# create network:
+docker network create hieu-network
+
+# create mysql container:
+docker run --network hieu-network --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -d mysql:8.0.40-debian
+
+# create prj:
+docker run --network hieu-network --name shop-app -p 8080:8080 -e DBMS_CONNECTION=jdbc:mysql://mysql:3306/shopapp hieund18/shop-app:0.0.1
+
+# install docker on ubuntu
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+# To install the latest version, run:
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Verify that the installation is successful by running the hello-world image:
+sudo docker run hello-world
+
+# show task manager:
+htop
+
+# list network:
+sudo docker network ls
+
+# create network:
+sudo docker network create hieu-network
+
+# create mysql container:
+sudo docker run --network hieu-network --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -d mysql:8.0.40-debian
+
+# create prj:
+sudo docker run --network hieu-network --name shop-app -p 8080:8080 -e DBMS_CONNECTION=jdbc:mysql://mysql:3306/shopapp -d hieund18/shop-app:0.0.1

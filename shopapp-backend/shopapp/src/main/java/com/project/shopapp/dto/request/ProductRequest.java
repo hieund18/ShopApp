@@ -19,6 +19,7 @@ public class ProductRequest {
     @DecimalMax(value = "10000000", message = "MAX_PRODUCT_PRICE")
     @DecimalMin(value = "0", message = "MIN_PRODUCT_PRICE")
     Float price;
+
     MultipartFile thumbnail;
     String description;
 
@@ -27,5 +28,5 @@ public class ProductRequest {
     Integer quantity;
 
     Long category;
-//    MultipartFile image;
+    //    MultipartFile image;
 }

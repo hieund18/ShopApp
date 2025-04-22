@@ -18,5 +18,5 @@ public interface CartMapper {
     @Mapping(source = "product.id", target = "productId")
     CartResponse toCartResponse(Cart cart);
 
-    Cart updateCart(@MappingTarget Cart cart, CartUpdateRequest request);
+    void updateCart(@MappingTarget Cart cart, CartUpdateRequest request);
 }

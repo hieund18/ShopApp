@@ -1,14 +1,13 @@
 package com.project.shopapp.dto.request;
 
+import java.time.LocalDate;
+
 import com.project.shopapp.validator.DobConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDate;
-import java.util.Date;
 
 @Data
 @Builder
@@ -25,10 +24,12 @@ public class UserCreationRequest {
     @NotBlank(message = "PASSWORD_NOT_BLANK")
     @Size(min = 8, message = "INVALID_PASSWORD")
     String password;
+
     String address;
 
     @DobConstraint(min = 16, message = "INVALID_DOB")
     LocalDate dateOfBirth;
+
     int facebookAccountId;
     int googleAccountId;
 }

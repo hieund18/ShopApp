@@ -35,5 +35,4 @@ public class OrderDetail {
     Float totalMoney;
 
     String color;
-
 }

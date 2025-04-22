@@ -1,5 +1,10 @@
 package com.project.shopapp.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.shopapp.dto.request.AuthenticationRequest;
 import com.project.shopapp.dto.request.IntrospectRequest;
@@ -20,11 +25,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -50,25 +50,17 @@ public class AuthenticationControllerTest {
                 .password("12345678")
                 .build();
 
-        authenticationResponse = AuthenticationResponse.builder()
-                .token("eyJhbGciOiJIUzUxMiJ9")
-                .build();
+        authenticationResponse =
+                AuthenticationResponse.builder().token("eyJhbGciOiJIUzUxMiJ9").build();
 
-        introspectRequest = IntrospectRequest.builder()
-                .token("eyJhbGciOiJIUzUxMiJ9")
-                .build();
+        introspectRequest =
+                IntrospectRequest.builder().token("eyJhbGciOiJIUzUxMiJ9").build();
 
-        introspectResponse = IntrospectResponse.builder()
-                .valid(true)
-                .build();
+        introspectResponse = IntrospectResponse.builder().valid(true).build();
 
-        refreshRequest = RefreshRequest.builder()
-                .token("eyJhbGciOiJIUzUxMiJ9")
-                .build();
+        refreshRequest = RefreshRequest.builder().token("eyJhbGciOiJIUzUxMiJ9").build();
 
-        logoutRequest = LogoutRequest.builder()
-                .token("eyJhbGciOiJIUzUxMiJ9")
-                .build();
+        logoutRequest = LogoutRequest.builder().token("eyJhbGciOiJIUzUxMiJ9").build();
     }
 
     @Test
@@ -80,8 +72,7 @@ public class AuthenticationControllerTest {
         when(authenticationService.authenticate(any())).thenReturn(authenticationResponse);
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/auth/token")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/token")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isOk())
@@ -98,8 +89,7 @@ public class AuthenticationControllerTest {
         when(authenticationService.authenticate(any())).thenThrow(new AppException(ErrorCode.USER_NOT_EXISTED));
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/auth/token")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/token")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isNotFound())
@@ -116,8 +106,7 @@ public class AuthenticationControllerTest {
         when(authenticationService.authenticate(any())).thenThrow(new AppException(ErrorCode.DEACTIVATED_USER));
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/auth/token")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/token")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isBadRequest())
@@ -134,14 +123,12 @@ public class AuthenticationControllerTest {
         when(authenticationService.authenticate(any())).thenThrow(new AppException(ErrorCode.UNAUTHENTICATED));
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/auth/token")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/token")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("code").value(1901))
                 .andExpect(jsonPath("message").value("Unauthenticated"));
-
     }
 
     @Test
@@ -153,8 +140,7 @@ public class AuthenticationControllerTest {
         when(authenticationService.introspect(any())).thenReturn(introspectResponse);
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/auth/introspect")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/introspect")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isOk())
@@ -172,8 +158,7 @@ public class AuthenticationControllerTest {
         when(authenticationService.introspect(any())).thenReturn(introspectResponse);
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/auth/introspect")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/introspect")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isOk())
@@ -190,14 +175,12 @@ public class AuthenticationControllerTest {
         when(authenticationService.refreshToken(any())).thenReturn(authenticationResponse);
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/auth/refresh")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("code").value(1000))
                 .andExpect(jsonPath("result.token").value("eyJhbGciOiJIUzUxMiJ9"));
-
     }
 
     @Test
@@ -209,8 +192,7 @@ public class AuthenticationControllerTest {
         when(authenticationService.refreshToken(any())).thenThrow(new AppException(ErrorCode.UNAUTHENTICATED));
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/auth/refresh")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isUnauthorized())
@@ -227,8 +209,7 @@ public class AuthenticationControllerTest {
         when(authenticationService.refreshToken(any())).thenThrow(new AppException(ErrorCode.USER_NOT_EXISTED));
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/auth/refresh")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isNotFound())
@@ -245,8 +226,7 @@ public class AuthenticationControllerTest {
         doNothing().when(authenticationService).logout(any());
 
         // WHEN, THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/auth/logout")
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/logout")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(content))
                 .andExpect(status().isOk())

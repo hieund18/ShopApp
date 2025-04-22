@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ShopappApplication" type="Application" factoryName="Application" nameIsGenerated="true">
+    <envs>
+      <env name="JWT_SIGNERKEY" value="rE9QgarzE1K18TwxJfY8XwkQsF0B50trW7wbVCe+0rwzsO1/Phcij2y/cY3sFGEV" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="com.project.shopapp.ShopappApplication" />
+    <module name="shopapp" />
+    <option name="VM_PARAMETERS" value="-Dspring.profiles.active=prod" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

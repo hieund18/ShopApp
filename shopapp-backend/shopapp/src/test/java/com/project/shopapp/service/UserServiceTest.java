@@ -1,5 +1,15 @@
 package com.project.shopapp.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import com.project.shopapp.dto.request.UserCreationRequest;
 import com.project.shopapp.dto.request.UserRolesUpdateRequest;
 import com.project.shopapp.dto.request.UserUpdateRequest;
@@ -8,10 +18,8 @@ import com.project.shopapp.dto.response.UserResponse;
 import com.project.shopapp.entity.Role;
 import com.project.shopapp.entity.User;
 import com.project.shopapp.exception.AppException;
-import com.project.shopapp.exception.ErrorCode;
 import com.project.shopapp.repository.RoleRepository;
 import com.project.shopapp.repository.UserRepository;
-import com.project.shopapp.repository.specification.UserSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,18 +32,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @TestPropertySource("/test.properties")
@@ -102,15 +98,9 @@ public class UserServiceTest {
                 .isActive(true)
                 .build();
 
-        role = Role.builder()
-                .id(1L)
-                .name("USER")
-                .build();
+        role = Role.builder().id(1L).name("USER").build();
 
-        roleResponse = RoleResponse.builder()
-                .id(1L)
-                .name("USER")
-                .build();
+        roleResponse = RoleResponse.builder().id(1L).name("USER").build();
     }
 
     @Test
@@ -135,8 +125,7 @@ public class UserServiceTest {
 
         when(userRepository.existsByPhoneNumber(anyString())).thenReturn(true);
         // WHEN
-        var exception = assertThrows(AppException.class,
-                () -> userService.createUser(request));
+        var exception = assertThrows(AppException.class, () -> userService.createUser(request));
 
         // THEN
         assertThat(exception.getErrorCode().getCode()).isEqualTo(1405);
@@ -183,7 +172,8 @@ public class UserServiceTest {
 
         Page<User> userPage = new PageImpl<>(List.of(user));
 
-        when(userRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(userPage);
+        when(userRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(userPage);
 
         // WHEN
         var response = userService.searchUsers(keyword, page, size);
@@ -191,7 +181,6 @@ public class UserServiceTest {
         // THEN
         assertThat(response.getContent().get(0).getId()).isEqualTo(1);
         assertThat(response.getContent().get(0).getFullName()).isEqualTo("Nguyen Hoa");
-
     }
 
     @Test
@@ -247,11 +236,10 @@ public class UserServiceTest {
 
         // THEN
         assertThat(exception.getErrorCode().getCode()).isEqualTo(1406);
-
     }
 
     @Test
-//    @WithMockUser(username = "1234567890")
+    //    @WithMockUser(username = "1234567890")
     void updateUser_validRequest_success() {
         // GIVEN
         SecurityContext context = SecurityContextHolder.createEmptyContext();
@@ -281,14 +269,14 @@ public class UserServiceTest {
 
         // THEN
         assertThat(exception.getErrorCode().getCode()).isEqualTo(1406);
-
     }
 
     @Test
     @WithMockUser(username = "123456789")
     void updateUser_unauthorized_fail() {
         // GIVEN
-//        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("123456789", null));
+        //        SecurityContextHolder.getContext().setAuthentication(new
+        // UsernamePasswordAuthenticationToken("123456789", null));
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
 
@@ -314,7 +302,6 @@ public class UserServiceTest {
         // THEN
         assertThat(response.getId()).isEqualTo(1);
         assertThat(response.getIsActive()).isEqualTo(false);
-
     }
 
     @Test
@@ -328,16 +315,14 @@ public class UserServiceTest {
 
         // THEN
         assertThat(exception.getErrorCode().getCode()).isEqualTo(1406);
-
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUserRoles_validRequest_success() {
         // GIVEN
-        UserRolesUpdateRequest userRolesUpdateRequest = UserRolesUpdateRequest.builder()
-                .roleIds(Set.of(1L))
-                .build();
+        UserRolesUpdateRequest userRolesUpdateRequest =
+                UserRolesUpdateRequest.builder().roleIds(Set.of(1L)).build();
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(roleRepository.findAllById(any())).thenReturn(List.of(role));
@@ -349,16 +334,14 @@ public class UserServiceTest {
         // THEN
         assertThat(response.getId()).isEqualTo(1);
         assertThat(response.getRoles()).extracting(RoleResponse::getName).containsExactlyInAnyOrder("USER");
-
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUserRoles_userNotFound_fail() {
         // GIVEN
-        UserRolesUpdateRequest userRolesUpdateRequest = UserRolesUpdateRequest.builder()
-                .roleIds(Set.of(1L))
-                .build();
+        UserRolesUpdateRequest userRolesUpdateRequest =
+                UserRolesUpdateRequest.builder().roleIds(Set.of(1L)).build();
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(null));
 
@@ -367,7 +350,5 @@ public class UserServiceTest {
 
         // THEN
         assertThat(exception.getErrorCode().getCode()).isEqualTo(1406);
-
     }
-
 }

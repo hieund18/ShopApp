@@ -1,11 +1,11 @@
 package com.project.shopapp.repository.specification;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.project.shopapp.entity.Order;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class OrderSpecification {
 
@@ -20,7 +20,7 @@ public class OrderSpecification {
             predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("address")), likePattern));
             predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), likePattern));
 
-            return criteriaBuilder.or(predicates.toArray(new Predicate[0]));// = where ... or ...
+            return criteriaBuilder.or(predicates.toArray(new Predicate[0])); // = where ... or ...
         };
     }
 }

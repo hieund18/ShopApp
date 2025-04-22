@@ -1,5 +1,7 @@
 package com.project.shopapp.service;
 
+import java.util.Optional;
+
 import com.project.shopapp.dto.request.CartCreationRequest;
 import com.project.shopapp.dto.request.CartUpdateRequest;
 import com.project.shopapp.dto.response.CartResponse;
@@ -23,9 +25,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -38,14 +37,15 @@ public class CartService {
     public CartResponse createCart(CartCreationRequest request) {
         var phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userRepository.findByPhoneNumber(phoneNumber)
+        User user = userRepository
+                .findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        Product product = productRepository.findById(request.getProductId())
+        Product product = productRepository
+                .findById(request.getProductId())
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
-        if (!product.getIsActive())
-            throw new AppException(ErrorCode.INVALID_PRODUCT);
+        if (!product.getIsActive()) throw new AppException(ErrorCode.INVALID_PRODUCT);
 
         Optional<Cart> cartOptional = cartRepository.findByUserAndProductAndColor(user, product, request.getColor());
 
@@ -76,44 +76,41 @@ public class CartService {
     public Page<CartResponse> getMyCart(int page, int limit) {
         var phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userRepository.findByPhoneNumber(phoneNumber)
+        User user = userRepository
+                .findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Pageable pageable = PageRequest.of(page, limit, Sort.by("updatedAt").descending());
 
-        return cartRepository.findAllByUser(user ,pageable).map(cartMapper::toCartResponse);
+        return cartRepository.findAllByUser(user, pageable).map(cartMapper::toCartResponse);
     }
 
     public CartResponse getCart(Long cartId) {
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
+        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
 
-        String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (!cart.getUser().getPhoneNumber().equals(phoneNumber))
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+        String phoneNumber =
+                SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!cart.getUser().getPhoneNumber().equals(phoneNumber)) throw new AppException(ErrorCode.UNAUTHORIZED);
 
         return cartMapper.toCartResponse(cart);
     }
 
     @Transactional
     public CartResponse updateCart(Long cartId, CartUpdateRequest request) {
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
+        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_EXISTED));
 
         var phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (!cart.getUser().getPhoneNumber().equals(phoneNumber))
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (!cart.getUser().getPhoneNumber().equals(phoneNumber)) throw new AppException(ErrorCode.UNAUTHORIZED);
 
-        if (!cart.getProduct().getIsActive())
-            throw new AppException(ErrorCode.INVALID_PRODUCT);
+        if (!cart.getProduct().getIsActive()) throw new AppException(ErrorCode.INVALID_PRODUCT);
 
-        Optional<Cart> cartOptional = cartRepository
-                .findByUserAndProductAndColorAndIdNot(cart.getUser(), cart.getProduct(), request.getColor(), cartId);
+        Optional<Cart> cartOptional = cartRepository.findByUserAndProductAndColorAndIdNot(
+                cart.getUser(), cart.getProduct(), request.getColor(), cartId);
 
         if (cartOptional.isPresent()) {
             Cart cartOld = cartOptional.get();
-            if (request.getQuantity() + cartOld.getQuantity() > cartOld.getProduct().getQuantity())
-                throw new AppException(ErrorCode.EXCEEDED_QUANTITY_AVAILABLE);
+            if (request.getQuantity() + cartOld.getQuantity()
+                    > cartOld.getProduct().getQuantity()) throw new AppException(ErrorCode.EXCEEDED_QUANTITY_AVAILABLE);
 
             cartOld.setQuantity(request.getQuantity() + cartOld.getQuantity());
             cartOld.setTotalMoney(cartOld.getPrice() * cartOld.getQuantity());
@@ -139,7 +136,8 @@ public class CartService {
     public void deleteMyCart() {
         var phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userRepository.findByPhoneNumber(phoneNumber)
+        User user = userRepository
+                .findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         cartRepository.deleteAllByUser(user);
@@ -149,22 +147,22 @@ public class CartService {
         Cart cart = cartRepository.findById(cartId).orElse(null);
 
         if (cart != null) {
-            String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
-            if (!cart.getUser().getPhoneNumber().equals(phoneNumber))
-                throw new AppException(ErrorCode.UNAUTHORIZED);
+            String phoneNumber =
+                    SecurityContextHolder.getContext().getAuthentication().getName();
+            if (!cart.getUser().getPhoneNumber().equals(phoneNumber)) throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
         cartRepository.deleteById(cartId);
     }
 
-//    public void updateCartPrice(Product product) {
-//        List<Cart> carts = cartRepository.findAllByProduct(product);
-//
-//        for (Cart cart : carts) {
-//            cart.setPrice(product.getPrice());
-//            cart.setTotalMoney(product.getPrice() * cart.getQuantity());
-//        }
-//
-//        cartRepository.saveAll(carts);
-//    }
+    //    public void updateCartPrice(Product product) {
+    //        List<Cart> carts = cartRepository.findAllByProduct(product);
+    //
+    //        for (Cart cart : carts) {
+    //            cart.setPrice(product.getPrice());
+    //            cart.setTotalMoney(product.getPrice() * cart.getQuantity());
+    //        }
+    //
+    //        cartRepository.saveAll(carts);
+    //    }
 }

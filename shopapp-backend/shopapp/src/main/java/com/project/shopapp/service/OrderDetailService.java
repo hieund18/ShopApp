@@ -1,5 +1,7 @@
 package com.project.shopapp.service;
 
+import java.util.List;
+
 import com.project.shopapp.dto.request.OrderDetailCreationRequest;
 import com.project.shopapp.dto.request.OrderDetailUpdateRequest;
 import com.project.shopapp.dto.response.OrderDetailResponse;
@@ -15,15 +17,11 @@ import com.project.shopapp.repository.ProductRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,10 +33,12 @@ public class OrderDetailService {
     OrderDetailMapper orderDetailMapper;
 
     public OrderDetailResponse createOrderDetail(OrderDetailCreationRequest request) {
-        Order order = orderRepository.findById(request.getOrderId())
+        Order order = orderRepository
+                .findById(request.getOrderId())
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
-        Product product = productRepository.findById(request.getProductId())
+        Product product = productRepository
+                .findById(request.getProductId())
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_EXISTED));
 
         OrderDetail orderDetail = orderDetailMapper.toOrderDetail(request);
@@ -50,17 +50,20 @@ public class OrderDetailService {
     }
 
     public List<OrderDetailResponse> getOrderDetails() {
-        return orderDetailRepository.findAll().stream().map(orderDetailMapper::toOrderDetailResponse).toList();
+        return orderDetailRepository.findAll().stream()
+                .map(orderDetailMapper::toOrderDetailResponse)
+                .toList();
     }
 
     public Page<OrderDetailResponse> getOrderDetailsByOrderId(Long orderId, int page, int limit) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+        Order order =
+                orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var phoneNumber = authentication.getName();
         var authorities = authentication.getAuthorities();
-        boolean isAdmin = authorities.stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = authorities.stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
 
         if (!isAdmin && !phoneNumber.equals(order.getUser().getPhoneNumber()))
             throw new AppException(ErrorCode.UNAUTHORIZED);
@@ -71,22 +74,25 @@ public class OrderDetailService {
     }
 
     public OrderDetailResponse getOrderDetail(Long id) {
-        OrderDetail orderDetail = orderDetailRepository.findById(id)
+        OrderDetail orderDetail = orderDetailRepository
+                .findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_DETAIL_NOT_EXISTED));
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var phoneNumber = authentication.getName();
         var authorities = authentication.getAuthorities();
-        boolean isAdmin = authorities.stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = authorities.stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
 
-        if(!isAdmin && !phoneNumber.equals(orderDetail.getOrder().getUser().getPhoneNumber()))
+        if (!isAdmin && !phoneNumber.equals(orderDetail.getOrder().getUser().getPhoneNumber()))
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
         return orderDetailMapper.toOrderDetailResponse(orderDetail);
     }
 
     public OrderDetailResponse updateOrderDetail(Long id, OrderDetailUpdateRequest orderDetailUpdateRequest) {
-        OrderDetail orderDetail = orderDetailRepository.findById(id)
+        OrderDetail orderDetail = orderDetailRepository
+                .findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_DETAIL_NOT_EXISTED));
 
         orderDetailMapper.updateOrderDetail(orderDetail, orderDetailUpdateRequest);

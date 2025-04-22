@@ -1,18 +1,16 @@
 package com.project.shopapp.controller;
 
+import java.util.List;
+
 import com.project.shopapp.dto.request.CategoryRequest;
 import com.project.shopapp.dto.response.ApiResponse;
 import com.project.shopapp.dto.response.CategoryResponse;
-import com.project.shopapp.entity.Category;
 import com.project.shopapp.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
@@ -36,7 +34,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    ApiResponse<CategoryResponse> getCategory(@PathVariable Long id){
+    ApiResponse<CategoryResponse> getCategory(@PathVariable Long id) {
         return ApiResponse.<CategoryResponse>builder()
                 .result(categoryService.getCategory(id))
                 .build();

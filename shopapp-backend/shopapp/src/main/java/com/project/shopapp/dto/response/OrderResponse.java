@@ -1,11 +1,10 @@
 package com.project.shopapp.dto.response;
 
-import com.project.shopapp.entity.User;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder

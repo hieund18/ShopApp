@@ -18,5 +18,5 @@ public interface OrderMapper {
 
     @Mapping(target = "shippingDate", ignore = true)
     @Mapping(target = "trackingNumber", ignore = true)
-    Order updateOrder(@MappingTarget Order order, OrderUpdateRequest request);
+    void updateOrder(@MappingTarget Order order, OrderUpdateRequest request);
 }

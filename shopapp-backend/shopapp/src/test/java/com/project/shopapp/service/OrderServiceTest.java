@@ -1,5 +1,15 @@
 package com.project.shopapp.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import com.project.shopapp.dto.request.OrderCreationRequest;
 import com.project.shopapp.entity.*;
 import com.project.shopapp.exception.AppException;
@@ -11,16 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
-
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @TestPropertySource("/test.properties")
@@ -156,8 +156,9 @@ public class OrderServiceTest {
         when(userRepository.findByPhoneNumber(anyString())).thenReturn(Optional.of(user));
         when(cartRepository.findAllByUserId(anyLong())).thenReturn(List.of(cart, cart2));
         when(orderRepository.save(any())).thenReturn(order);
-        // khong dung gia tri tra ve thi khong mock (productRepository.save, orderDetailRepository.save, cartRepository.deleteAll)
-//        when(orderDetailRepository.save(any())).thenReturn(orderDetail);
+        // khong dung gia tri tra ve thi khong mock (productRepository.save, orderDetailRepository.save,
+        // cartRepository.deleteAll)
+        //        when(orderDetailRepository.save(any())).thenReturn(orderDetail);
 
         // WHEN
         var response = orderService.createOrder(request);
@@ -169,12 +170,11 @@ public class OrderServiceTest {
         verify(productRepository, times(1)).save(argThat(product1 -> product1.getQuantity() == 9970));
         verify(productRepository, times(1)).save(argThat(p -> p.getQuantity() == 19990));
         verify(cartRepository, times(1)).deleteAll(anyList());
-
     }
 
     @Test
     @WithMockUser(username = "hoa")
-    void createOrder_userNotFound_fail(){
+    void createOrder_userNotFound_fail() {
         // GIVEN
         when(userRepository.findByPhoneNumber(anyString())).thenReturn(Optional.empty());
 
@@ -183,12 +183,11 @@ public class OrderServiceTest {
 
         // THEN
         assertThat(exception.getErrorCode().getCode()).isEqualTo(1406);
-
     }
 
     @Test
     @WithMockUser(username = "hoa")
-    void createOrder_deactivatedUser_fail(){
+    void createOrder_deactivatedUser_fail() {
         // GIVEN
         user.setIsActive(false);
         when(userRepository.findByPhoneNumber(anyString())).thenReturn(Optional.of(user));
@@ -198,12 +197,11 @@ public class OrderServiceTest {
 
         // THEN
         assertThat(exception.getErrorCode().getCode()).isEqualTo(1408);
-
     }
 
     @Test
     @WithMockUser(username = "hoa")
-    void createOrder_cartEmpty_fail(){
+    void createOrder_cartEmpty_fail() {
         // GIVEN
         when(userRepository.findByPhoneNumber(anyString())).thenReturn(Optional.of(user));
         when(cartRepository.findAllByUserId(anyLong())).thenReturn(Collections.emptyList());
@@ -213,12 +211,11 @@ public class OrderServiceTest {
 
         // THEN
         assertThat(exception.getErrorCode().getCode()).isEqualTo(1606);
-
     }
 
     @Test
     @WithMockUser(username = "hoa")
-    void createOrder_inactiveProduct_fail(){
+    void createOrder_inactiveProduct_fail() {
         // GIVEN
         product.setIsActive(false);
         when(userRepository.findByPhoneNumber(anyString())).thenReturn(Optional.of(user));
@@ -229,12 +226,11 @@ public class OrderServiceTest {
 
         // THEN
         assertThat(exception.getErrorCode().getCode()).isEqualTo(1803);
-
     }
 
     @Test
     @WithMockUser(username = "hoa")
-    void createOrder_exceededQuantity_fail(){
+    void createOrder_exceededQuantity_fail() {
         // GIVEN
         cart.setQuantity(100000);
         when(userRepository.findByPhoneNumber(anyString())).thenReturn(Optional.of(user));
@@ -245,6 +241,5 @@ public class OrderServiceTest {
 
         // THEN
         assertThat(exception.getErrorCode().getCode()).isEqualTo(1801);
-
     }
 }

@@ -15,8 +15,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RequestMapping("/products")
 @RestController
 @RequiredArgsConstructor
@@ -48,10 +46,10 @@ public class ProductController {
             @RequestParam(required = false) Float toPrice,
             @RequestParam(required = false) Boolean isActive,
             @RequestParam(required = false) Long categoryId,
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.<Page<ProductResponse>>builder()
-                .result(productService.findProductsByQuerydsl(keyword, fromPrice, toPrice, isActive, categoryId, pageable))
+                .result(productService.findProductsByQuerydsl(
+                        keyword, fromPrice, toPrice, isActive, categoryId, pageable))
                 .build();
     }
 
@@ -63,7 +61,8 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}")
-    ApiResponse<ProductResponse> updateProduct(@PathVariable Long productId, @ModelAttribute @Valid ProductRequest request) {
+    ApiResponse<ProductResponse> updateProduct(
+            @PathVariable Long productId, @ModelAttribute @Valid ProductRequest request) {
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.updateProduct(productId, request))
                 .build();

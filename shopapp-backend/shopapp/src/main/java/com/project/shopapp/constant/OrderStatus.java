@@ -1,4 +1,4 @@
-package com.project.shopapp.enums;
+package com.project.shopapp.constant;
 
 public enum OrderStatus {
     PENDING,

@@ -1,18 +1,17 @@
 package com.project.shopapp.service;
 
-import com.project.shopapp.exception.AppException;
-import com.project.shopapp.exception.ErrorCode;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
+
+import com.project.shopapp.exception.AppException;
+import com.project.shopapp.exception.ErrorCode;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileStorageService {
@@ -24,13 +23,11 @@ public class FileStorageService {
         if (file.isEmpty() || !file.getContentType().startsWith("image/"))
             throw new AppException(ErrorCode.INVALID_FILE);
 
-        if (file.getSize() > 10 * 1024 * 1024)
-            throw new AppException(ErrorCode.INVALID_FILE_SIZE);
+        if (file.getSize() > 10 * 1024 * 1024) throw new AppException(ErrorCode.INVALID_FILE_SIZE);
 
         try {
             Path uploadDir = Paths.get(uploadPath);
-            if (!Files.exists(uploadDir))
-                Files.createDirectories(uploadDir);
+            if (!Files.exists(uploadDir)) Files.createDirectories(uploadDir);
 
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             Path filePath = Paths.get(uploadPath, fileName);

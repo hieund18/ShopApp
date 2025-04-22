@@ -1,11 +1,14 @@
 package com.project.shopapp.service;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import com.project.shopapp.constant.OrderStatus;
 import com.project.shopapp.dto.request.OrderCreationRequest;
 import com.project.shopapp.dto.request.OrderStatusUpdateRequest;
 import com.project.shopapp.dto.request.OrderUpdateRequest;
 import com.project.shopapp.dto.response.OrderResponse;
 import com.project.shopapp.entity.*;
-import com.project.shopapp.enums.OrderStatus;
 import com.project.shopapp.exception.AppException;
 import com.project.shopapp.exception.ErrorCode;
 import com.project.shopapp.mapper.OrderDetailMapper;
@@ -15,7 +18,6 @@ import com.project.shopapp.repository.specification.OrderSpecification;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,9 +27,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -45,21 +44,19 @@ public class OrderService {
     public OrderResponse createOrder(OrderCreationRequest request) {
         var phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userRepository.findByPhoneNumber(phoneNumber)
+        User user = userRepository
+                .findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        if (!user.getIsActive())
-            throw new AppException(ErrorCode.DEACTIVATED_USER);
+        if (!user.getIsActive()) throw new AppException(ErrorCode.DEACTIVATED_USER);
 
         List<Cart> carts = cartRepository.findAllByUserId(user.getId());
-        if (carts.isEmpty())
-            throw new AppException(ErrorCode.CART_EMPTY);
+        if (carts.isEmpty()) throw new AppException(ErrorCode.CART_EMPTY);
 
         for (Cart cart : carts) {
             Product product = cart.getProduct();
 
-            if (!product.getIsActive())
-                throw new AppException(ErrorCode.INVALID_PRODUCT);
+            if (!product.getIsActive()) throw new AppException(ErrorCode.INVALID_PRODUCT);
 
             if (cart.getQuantity() > product.getQuantity())
                 throw new AppException(ErrorCode.EXCEEDED_QUANTITY_AVAILABLE);
@@ -71,7 +68,8 @@ public class OrderService {
         order.setStatus(OrderStatus.PENDING.name());
         order.setShippingDate(LocalDate.now().plusDays(3));
         order.setIsActive(true);
-        order.setTotalMoney((float) carts.stream().mapToDouble(Cart::getTotalMoney).sum());
+        order.setTotalMoney(
+                (float) carts.stream().mapToDouble(Cart::getTotalMoney).sum());
 
         order = orderRepository.save(order);
 
@@ -110,18 +108,27 @@ public class OrderService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<OrderResponse> findOrdersByQuerydsl(String keyword, Float totalMoneyFrom, Float totalMoneyTo, LocalDate startDate,
-                                                    LocalDate endDate, String status, Boolean isActive, Long userId, Pageable pageable)
-    {
+    public Page<OrderResponse> findOrdersByQuerydsl(
+            String keyword,
+            Float totalMoneyFrom,
+            Float totalMoneyTo,
+            LocalDate startDate,
+            LocalDate endDate,
+            String status,
+            Boolean isActive,
+            Long userId,
+            Pageable pageable) {
         return orderRepository
-                .findOrdersByQuerydsl(keyword, totalMoneyFrom, totalMoneyTo, startDate, endDate, isActive, status, userId, pageable)
+                .findOrdersByQuerydsl(
+                        keyword, totalMoneyFrom, totalMoneyTo, startDate, endDate, isActive, status, userId, pageable)
                 .map(orderMapper::toOrderResponse);
     }
 
     public Page<OrderResponse> getMyOrders(int page, int limit) {
         var phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userRepository.findByPhoneNumber(phoneNumber)
+        User user = userRepository
+                .findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Pageable pageable = PageRequest.of(page, limit, Sort.by("createdAt").descending());
@@ -130,13 +137,14 @@ public class OrderService {
     }
 
     public OrderResponse getOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+        Order order =
+                orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var phoneNumber = authentication.getName();
         var authorities = authentication.getAuthorities();
-        boolean isAdmin = authorities.stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = authorities.stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
 
         if (!isAdmin && !phoneNumber.equals(order.getUser().getPhoneNumber()))
             throw new AppException(ErrorCode.UNAUTHORIZED);
@@ -145,18 +153,19 @@ public class OrderService {
     }
 
     public OrderResponse updateOrder(Long orderId, OrderUpdateRequest request) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+        Order order =
+                orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
-        if (order.getStatus().equals(OrderStatus.SHIPPED.name()) ||
-                order.getStatus().equals(OrderStatus.DELIVERED.name()) ||
-                order.getStatus().equals(OrderStatus.CANCELLED.name()))
+        if (order.getStatus().equals(OrderStatus.SHIPPED.name())
+                || order.getStatus().equals(OrderStatus.DELIVERED.name())
+                || order.getStatus().equals(OrderStatus.CANCELLED.name()))
             throw new AppException(ErrorCode.CANNOT_MODIFY_ORDER);
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         var phoneNumber = authentication.getName();
         var authorities = authentication.getAuthorities();
-        boolean isAdmin = authorities.stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = authorities.stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
 
         if (!isAdmin && !phoneNumber.equals(order.getUser().getPhoneNumber()))
             throw new AppException(ErrorCode.UNAUTHORIZED);
@@ -167,11 +176,9 @@ public class OrderService {
         if ((request.getShippingDate() != null || request.getTrackingNumber() != null) && !isAdmin)
             throw new AppException(ErrorCode.CANNOT_MODIFY_ORDER);
 
-        if (request.getShippingDate() != null)
-            order.setShippingDate(request.getShippingDate());
+        if (request.getShippingDate() != null) order.setShippingDate(request.getShippingDate());
 
-        if (request.getTrackingNumber() != null)
-            order.setTrackingNumber(request.getTrackingNumber());
+        if (request.getTrackingNumber() != null) order.setTrackingNumber(request.getTrackingNumber());
 
         orderMapper.updateOrder(order, request);
 
@@ -183,15 +190,17 @@ public class OrderService {
         try {
             OrderStatus nextStatus = OrderStatus.valueOf(request.getStatus());
 
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+            Order order =
+                    orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
             OrderStatus currentStatus = OrderStatus.valueOf(order.getStatus());
 
             var authentication = SecurityContextHolder.getContext().getAuthentication();
             var phoneNumber = authentication.getName();
             var authorities = authentication.getAuthorities();
-            boolean isAdmin = authorities.stream().anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+            boolean isAdmin = authorities.stream()
+                    .anyMatch(
+                            grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
 
             if (!isAdmin && !phoneNumber.equals(order.getUser().getPhoneNumber()))
                 throw new AppException(ErrorCode.UNAUTHORIZED);
@@ -208,7 +217,8 @@ public class OrderService {
             order.setStatus(nextStatus.name());
             orderRepository.save(order);
 
-            if ((currentStatus == OrderStatus.PENDING || currentStatus == OrderStatus.PROCESSING) && nextStatus == OrderStatus.CANCELLED) {
+            if ((currentStatus == OrderStatus.PENDING || currentStatus == OrderStatus.PROCESSING)
+                    && nextStatus == OrderStatus.CANCELLED) {
                 List<OrderDetail> orderDetails = orderDetailRepository.findAllByOrderId(orderId);
 
                 for (OrderDetail orderDetail : orderDetails) {
@@ -227,8 +237,8 @@ public class OrderService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public OrderResponse updateOrderActiveStatus(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
+        Order order =
+                orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_EXISTED));
 
         if (!order.getStatus().equals(OrderStatus.DELIVERED.name()))
             throw new AppException(ErrorCode.INVALID_ACTIVE_STATUS);
@@ -239,17 +249,15 @@ public class OrderService {
     }
 
     private boolean isValidAdminTransaction(OrderStatus current, OrderStatus next) {
-        if (current == next)
-            return true;
+        if (current == next) return true;
 
-        return (current == OrderStatus.PENDING && (next == OrderStatus.PROCESSING || next == OrderStatus.CANCELLED)) ||
-                (current == OrderStatus.PROCESSING && (next == OrderStatus.SHIPPED || next == OrderStatus.CANCELLED)) ||
-                (current == OrderStatus.SHIPPED && next == OrderStatus.DELIVERED);
+        return (current == OrderStatus.PENDING && (next == OrderStatus.PROCESSING || next == OrderStatus.CANCELLED))
+                || (current == OrderStatus.PROCESSING && (next == OrderStatus.SHIPPED || next == OrderStatus.CANCELLED))
+                || (current == OrderStatus.SHIPPED && next == OrderStatus.DELIVERED);
     }
 
     private boolean isValidUserTransaction(OrderStatus current, OrderStatus next) {
-        if (current == next)
-            return true;
+        if (current == next) return true;
 
         switch (current) {
             case PENDING:

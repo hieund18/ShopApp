@@ -1,5 +1,7 @@
 package com.project.shopapp.controller;
 
+import java.util.List;
+
 import com.project.shopapp.dto.request.RoleRequest;
 import com.project.shopapp.dto.response.ApiResponse;
 import com.project.shopapp.dto.response.RoleResponse;
@@ -9,8 +11,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/roles")
@@ -34,7 +34,7 @@ public class RoleController {
     }
 
     @PutMapping("/{roleId}")
-    ApiResponse<RoleResponse> updateRole(@PathVariable Long roleId, @RequestBody @Valid RoleRequest request){
+    ApiResponse<RoleResponse> updateRole(@PathVariable Long roleId, @RequestBody @Valid RoleRequest request) {
         return ApiResponse.<RoleResponse>builder()
                 .result(roleService.updateRole(roleId, request))
                 .build();

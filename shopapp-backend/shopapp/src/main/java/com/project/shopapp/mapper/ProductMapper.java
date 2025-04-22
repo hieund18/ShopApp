@@ -17,5 +17,5 @@ public interface ProductMapper {
 
     @Mapping(target = "thumbnail", ignore = true)
     @Mapping(target = "category", ignore = true)
-    Product updateProduct(@MappingTarget Product product, ProductRequest request);
+    void updateProduct(@MappingTarget Product product, ProductRequest request);
 }

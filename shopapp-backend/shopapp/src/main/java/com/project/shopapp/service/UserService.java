@@ -1,5 +1,10 @@
 package com.project.shopapp.service;
 
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+
+import com.project.shopapp.constant.PredefinedRole;
 import com.project.shopapp.dto.request.UserCreationRequest;
 import com.project.shopapp.dto.request.UserRolesUpdateRequest;
 import com.project.shopapp.dto.request.UserUpdateRequest;
@@ -16,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,10 +32,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -42,26 +44,27 @@ public class UserService {
     PasswordEncoder passwordEncoder;
 
     public UserResponse createUser(UserCreationRequest request) {
-        if (userRepository.existsByPhoneNumber(request.getPhoneNumber()))
-            throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
-
         User user = userMapper.toUser(request);
 
-        Role role = roleRepository.findByName(com.project.shopapp.enums.Role.USER.name())
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
-
         HashSet<Role> roles = new HashSet<>();
-        roles.add(role);
+        roleRepository.findByName(PredefinedRole.USER.name()).ifPresent(roles::add);
+
         user.setRoles(roles);
 
         user.setIsActive(true);
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        return userMapper.toUserResponse(userRepository.save(user));
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException exception) {
+            throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
+        }
+
+        return userMapper.toUserResponse(user);
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Page<UserResponse> getUsers(int page, int size) {
         log.info("In method get users");
@@ -81,37 +84,36 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<UserResponse> findUsersByQuerydsl(String keyword, Boolean isActive, LocalDate startDate,
-                                                  LocalDate endDate, Long roleId, Pageable pageable
-    ) {
-        return userRepository.findUsersByQuerydsl(keyword, isActive, startDate, endDate, roleId, pageable)
+    public Page<UserResponse> findUsersByQuerydsl(
+            String keyword, Boolean isActive, LocalDate startDate, LocalDate endDate, Long roleId, Pageable pageable) {
+        return userRepository
+                .findUsersByQuerydsl(keyword, isActive, startDate, endDate, roleId, pageable)
                 .map(userMapper::toUserResponse);
     }
 
     @PostAuthorize("hasRole('ADMIN') or returnObject.phoneNumber == authentication.name")
     public UserResponse getUser(Long userId) {
         log.info("In method get user by userId");
-        return userMapper.toUserResponse(userRepository.findById(userId).orElseThrow(
-                () -> new AppException(ErrorCode.USER_NOT_EXISTED)));
+        return userMapper.toUserResponse(
+                userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
     }
 
     public UserResponse getMyInfo() {
         var context = SecurityContextHolder.getContext();
         var phoneNumber = context.getAuthentication().getName();
 
-        return userMapper.toUserResponse(userRepository.findByPhoneNumber(phoneNumber)
+        return userMapper.toUserResponse(userRepository
+                .findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
     }
 
     public UserResponse updateUser(Long userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         var authenticate = SecurityContextHolder.getContext().getAuthentication();
         var phoneNumber = authenticate.getName();
 
-        if (!phoneNumber.equals(user.getPhoneNumber()))
-            throw new AppException(ErrorCode.UNAUTHORIZED);
+        if (!phoneNumber.equals(user.getPhoneNumber())) throw new AppException(ErrorCode.UNAUTHORIZED);
 
         userMapper.updateUser(user, request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -122,8 +124,7 @@ public class UserService {
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse updateUserStatus(Long userId) {
         log.info("In method updateUserStatus");
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         user.setIsActive(!user.getIsActive());
 
@@ -132,8 +133,7 @@ public class UserService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse updateUserRoles(Long userId, UserRolesUpdateRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         List<Role> roles = roleRepository.findAllById(request.getRoleIds());
         user.setRoles(new HashSet<>(roles));
