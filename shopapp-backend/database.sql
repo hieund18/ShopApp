@@ -4,7 +4,7 @@ USE shopapp;
 CREATE TABLE users(
 	id INT PRIMARY KEY AUTO_INCREMENT,
     fullname VARCHAR(100) DEFAULT '',
-    phone_number VARCHAR(10) NOT NULL,
+    phone_number VARCHAR(10) NOT NULL COLLATE utf8mb4_unicode_ci UNIQUE,
     address VARCHAR(200) DEFAULT '',
     password VARCHAR(100) NOT NULL DEFAULT '',
     created_at DATETIME,
@@ -31,7 +31,7 @@ CREATE TABLE users_roles(
     role_id INT,
     CONSTRAINT pk_users_roles PRIMARY KEY (user_id, role_id),
 	FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-	FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE RESTRICT
+	FOREIGN KEY (role_id) REFERENCES roles (id) -- ON DELETE RESTRICT (thua - mac dinh la restrict)
 );
 
 -- alter table roles auto_increment =1;
