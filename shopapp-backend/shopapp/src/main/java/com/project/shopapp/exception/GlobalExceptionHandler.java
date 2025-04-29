@@ -57,6 +57,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = DataIntegrityViolationException.class)
     ResponseEntity<ApiResponse> handlingDataIntegrityViolationException(DataIntegrityViolationException exception) {
+        log.info("error ", exception);
         ErrorCode errorCode = ErrorCode.DATA_CONFLICT;
 
         return ResponseEntity.status(errorCode.getStatusCode())

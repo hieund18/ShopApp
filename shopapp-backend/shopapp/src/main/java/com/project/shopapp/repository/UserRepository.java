@@ -19,4 +19,10 @@ public interface UserRepository
     Page<User> findAll(Pageable pageable);
 
     boolean existsByPhoneNumberAndIsActive(String phoneNumber, boolean isActive);
+
+    Optional<User> findByGoogleAccountId(String id);
+
+    Optional<User> findByGithubAccountId(String id);
+
+    boolean existsByGoogleAccountId(String id);
 }

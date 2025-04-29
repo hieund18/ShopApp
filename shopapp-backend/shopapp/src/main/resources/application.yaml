@@ -20,6 +20,16 @@ spring:
 upload:
   path: uploads
 
+outbound:
+  identity:
+    google:
+      client-id: "1082353649013-1uo601vbbdtgs4jmpjcisk1e1bno2i5h.apps.googleusercontent.com"
+      client-secret: ${OUTBOUND_GOOGLE_CLIENTSECRET}
+      redirect-uri: "http://localhost:3000/authenticate"
+    github:
+      client-id: "Iv23li72gKeke325ASC3"
+      client-secret: ${OUTBOUND_GITHUB_CLIENTSECRET}
+      redirect-uri: "http://localhost:3000/authenticate"
 jwt:
   signer-key: "0ghcd9Ns7haKp9aqF4Vtftpf/8h3bP18ttqbr2z9UfPAwSEJIOZnT3nRVMgUdsNp"
   valid-duration: 3600

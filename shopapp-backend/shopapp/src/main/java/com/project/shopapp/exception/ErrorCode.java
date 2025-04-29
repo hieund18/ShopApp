@@ -47,6 +47,11 @@ public enum ErrorCode {
     USER_NOT_EXISTED(1406, "User not existed", HttpStatus.NOT_FOUND),
     INVALID_DOB(1407, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     DEACTIVATED_USER(1408, "User is deactivated", HttpStatus.BAD_REQUEST),
+    PASSWORD_EXISTED(1409, "Password existed", HttpStatus.BAD_REQUEST),
+    ACCOUNT_LINKED_GOOGLE(1410, "Account linked to google", HttpStatus.BAD_REQUEST),
+    GOOGLE_ACCOUNT_EXISTED(1411, "Google account linked to another user", HttpStatus.BAD_REQUEST),
+    ACCOUNT_LINKED_GITHUB(1412, "Account linked to github", HttpStatus.BAD_REQUEST),
+    GITHUB_ACCOUNT_EXISTED(1413, "Github account linked to another user", HttpStatus.BAD_REQUEST),
 
     // productImage error
     MAX_IMAGE_QUANTITY(1501, "Maximum 5 images", HttpStatus.BAD_REQUEST),

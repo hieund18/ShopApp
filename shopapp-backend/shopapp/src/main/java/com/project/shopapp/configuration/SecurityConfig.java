@@ -22,11 +22,12 @@ import org.springframework.web.filter.CorsFilter;
 @EnableMethodSecurity
 public class SecurityConfig {
     private static final String[] PUBLIC_POST_ENDPOINTS = {
-        "/auth/token", "/auth/introspect", "/users", "/auth/logout", "/auth/refresh",
+            "/auth/token", "/auth/introspect", "/users", "/auth/logout", "/auth/refresh",
+            "/auth/outbound/authentication", "/auth/outbound/authentication-github"
     };
 
     private static final String[] PUBLIC_GET_ENDPOINTS = {
-        "/products", "/products/{productId}", "/product-images/product/{productId}", "/categories", "/categories/{id}"
+            "/products", "/products/{productId}", "/product-images/product/{productId}", "/categories", "/categories/{id}"
     };
 
     @Autowired

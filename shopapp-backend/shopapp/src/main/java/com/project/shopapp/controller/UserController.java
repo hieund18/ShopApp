@@ -2,6 +2,7 @@ package com.project.shopapp.controller;
 
 import java.time.LocalDate;
 
+import com.project.shopapp.dto.request.PasswordCreationRequest;
 import com.project.shopapp.dto.request.UserCreationRequest;
 import com.project.shopapp.dto.request.UserRolesUpdateRequest;
 import com.project.shopapp.dto.request.UserUpdateRequest;
@@ -33,6 +34,14 @@ public class UserController {
     ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.createUser(request))
+                .build();
+    }
+
+    @PostMapping("/create-password")
+    ApiResponse<Void> createPassword(@RequestBody @Valid PasswordCreationRequest request){
+        userService.createPassword(request);
+        return ApiResponse.<Void>builder()
+                .message("Password has been created, you could use it to log-in")
                 .build();
     }
 

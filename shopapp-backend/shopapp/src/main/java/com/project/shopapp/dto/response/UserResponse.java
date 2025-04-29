@@ -19,9 +19,10 @@ public class UserResponse {
     String address;
     Boolean isActive;
     LocalDate dateOfBirth;
-    Integer facebookAccountId;
-    Integer googleAccountId;
+    String githubAccountId;
+    String googleAccountId;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    Boolean noPassword;
     Set<RoleResponse> roles;
 }

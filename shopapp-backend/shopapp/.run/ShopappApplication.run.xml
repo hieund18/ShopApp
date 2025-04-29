@@ -2,6 +2,8 @@
   <configuration default="false" name="ShopappApplication" type="Application" factoryName="Application" nameIsGenerated="true">
     <envs>
       <env name="JWT_SIGNERKEY" value="rE9QgarzE1K18TwxJfY8XwkQsF0B50trW7wbVCe+0rwzsO1/Phcij2y/cY3sFGEV" />
+      <env name="OUTBOUND_GOOGLE_CLIENTSECRET" value="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" />
+      <env name="OUTBOUND_GITHUB_CLIENTSECRET" value="0f8121f31064f83f056e022f7aa9b804db486772" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="com.project.shopapp.ShopappApplication" />
     <module name="shopapp" />

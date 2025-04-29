@@ -29,7 +29,4 @@ public class UserCreationRequest {
 
     @DobConstraint(min = 16, message = "INVALID_DOB")
     LocalDate dateOfBirth;
-
-    int facebookAccountId;
-    int googleAccountId;
 }

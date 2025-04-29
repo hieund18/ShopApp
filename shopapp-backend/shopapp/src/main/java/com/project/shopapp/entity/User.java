@@ -38,11 +38,11 @@ public class User extends BaseEntity {
     @Column(name = "date_of_birth")
     LocalDate dateOfBirth;
 
-    @Column(name = "facebook_account_id")
-    Integer facebookAccountId;
+    @Column(name = "github_account_id")
+    String githubAccountId;
 
     @Column(name = "google_account_id")
-    Integer googleAccountId;
+    String googleAccountId;
 
     @ManyToMany
     @JoinTable(

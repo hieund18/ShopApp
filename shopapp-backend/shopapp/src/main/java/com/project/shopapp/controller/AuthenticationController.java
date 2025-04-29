@@ -14,10 +14,7 @@ import com.project.shopapp.service.AuthenticationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -30,6 +27,38 @@ public class AuthenticationController {
     ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.authenticate(request))
+                .build();
+    }
+
+    @PostMapping("/outbound/authentication")
+    ApiResponse<AuthenticationResponse> outboundAuthenticate(@RequestParam("code") String code) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(authenticationService.outboundAuthenticate(code))
+                .build();
+    }
+
+    @PostMapping("/outbound/authentication-github")
+    ApiResponse<AuthenticationResponse> outboundAuthenticateGitHub(@RequestParam("code") String code) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(authenticationService.outboundAuthenticateGithub(code))
+                .build();
+    }
+
+    @PostMapping("/link/google")
+    ApiResponse<Void> linkGoogleAccount(@RequestParam("code") String code){
+        authenticationService.linkGoogleAccount(code);
+
+        return ApiResponse.<Void>builder()
+                .message("Linked with google success")
+                .build();
+    }
+
+    @PostMapping("/link/github")
+    ApiResponse<Void> linkGithubAccount(@RequestParam("code") String code){
+        authenticationService.linkGithubAccount(code);
+
+        return ApiResponse.<Void>builder()
+                .message("Linked with github success")
                 .build();
     }
 

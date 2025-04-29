@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import com.project.shopapp.constant.PredefinedRole;
+import com.project.shopapp.dto.request.PasswordCreationRequest;
 import com.project.shopapp.dto.request.UserCreationRequest;
 import com.project.shopapp.dto.request.UserRolesUpdateRequest;
 import com.project.shopapp.dto.request.UserUpdateRequest;
@@ -32,6 +33,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -62,6 +64,22 @@ public class UserService {
         }
 
         return userMapper.toUserResponse(user);
+    }
+
+    public void createPassword(PasswordCreationRequest request){
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var phoneNumber = authentication.getName();
+
+        var user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
+        );
+
+        if(StringUtils.hasText(user.getPassword()))
+            throw new AppException(ErrorCode.PASSWORD_EXISTED);
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        userRepository.save(user);
     }
 
     // @PreAuthorize("hasRole('ADMIN')")
@@ -102,9 +120,15 @@ public class UserService {
         var context = SecurityContextHolder.getContext();
         var phoneNumber = context.getAuthentication().getName();
 
-        return userMapper.toUserResponse(userRepository
-                .findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
+        var user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
+        );
+
+        var userResponse = userMapper.toUserResponse(user);
+
+        userResponse.setNoPassword(!StringUtils.hasText(user.getPassword()));
+
+        return userResponse;
     }
 
     public UserResponse updateUser(Long userId, UserUpdateRequest request) {

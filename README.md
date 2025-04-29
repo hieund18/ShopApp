@@ -2,12 +2,15 @@
 
 ## Overview
 
-A RESTful Spring Boot back-end for an online shop, supporting product, user, and order management with JWT-based authentication and role-based authorization. The app is containerized with Docker and deployed on AWS EC2.
+A RESTful Spring Boot back-end for an online shop, supporting product, user, and order management with JWT-based authentication, role-based authorization, and social login via Google and GitHub. The app is containerized with Docker and deployed on AWS EC2.
 
 ## Features
 
 - **Product Management**: CRUD operations for products and images.
-- **User Management**: Register, login, logout with JWT; role-based access (Admin/User).
+- **User Management**:
+  - Register, login, logout with JWT.
+  - Social login and account linking with Google and GitHub.
+  - Role-based access (Admin/User).
 - **Order Management**: Create orders, manage cart, and process checkout.
 - **Security**: JWT authentication, token refresh, and centralized exception handling.
 - **Validation**: Custom input validators (e.g., email, price).
@@ -18,7 +21,7 @@ A RESTful Spring Boot back-end for an online shop, supporting product, user, and
 
 - **Back-end**: Java, Spring Boot, Hibernate, QueryDSL
 - **Database**: MySQL
-- **Security**: JWT
+- **Security**: JWT, OAuth2 (Google, GitHub)
 - **Testing**: JUnit, Mockito
 - **DevOps**: Docker, Docker Hub, AWS EC2
 - **Tools**: Maven, Git, Postman
@@ -30,6 +33,7 @@ A RESTful Spring Boot back-end for an online shop, supporting product, user, and
 - Docker (optional)
 - Maven
 - Postman
+- Google and GitHub OAuth2 credentials (for social login)
 
 ## Installation
 
@@ -48,6 +52,14 @@ A RESTful Spring Boot back-end for an online shop, supporting product, user, and
          url: jdbc:mysql://localhost:3306/shopapp
          username: your_username
          password: your_password
+   outbound:
+      identity:
+         google:
+            client-id: your-google-client-id
+            client-secret: your-google-client-secret
+         github:
+            client-id: your-github-client-id
+            client-secret: your-github-client-secret
      ```
 
 3. **Build and run**:

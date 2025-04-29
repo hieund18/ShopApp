@@ -4,18 +4,23 @@ USE shopapp;
 CREATE TABLE users(
 	id INT PRIMARY KEY AUTO_INCREMENT,
     fullname VARCHAR(100) DEFAULT '',
-    phone_number VARCHAR(10) NOT NULL COLLATE utf8mb4_unicode_ci UNIQUE,
+    phone_number VARCHAR(100) NOT NULL COLLATE utf8mb4_unicode_ci UNIQUE,
     address VARCHAR(200) DEFAULT '',
-    password VARCHAR(100) NOT NULL DEFAULT '',
+    password VARCHAR(100) DEFAULT '',
     created_at DATETIME,
     updated_at DATETIME,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     date_of_birth DATE,
-    facebook_account_id INT DEFAULT 0,
-    google_account_id INT DEFAULT 0
+    github_account_id VARCHAR(255) UNIQUE,
+    google_account_id VARCHAR(255) UNIQUE
 );
 
 -- ALTER TABLE users ADD COLUMN role_id INT;
+
+-- alter table users modify column phone_number VARCHAR(100) NOT NULL COLLATE utf8mb4_unicode_ci UNIQUE;
+-- alter table users add column github_account_id VARCHAR(255) DEFAULT '';
+-- ALTER TABLE users ADD CONSTRAINT unique_github_id UNIQUE (github_account_id);
+-- alter table users modify column google_account_id varchar(255) default null unique;
 
 CREATE TABLE roles(
 	id INT PRIMARY KEY AUTO_INCREMENT,

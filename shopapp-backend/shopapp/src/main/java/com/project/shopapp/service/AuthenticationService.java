@@ -3,37 +3,42 @@ package com.project.shopapp.service;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.StringJoiner;
-import java.util.UUID;
+import java.util.*;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.project.shopapp.dto.request.AuthenticationRequest;
-import com.project.shopapp.dto.request.IntrospectRequest;
-import com.project.shopapp.dto.request.LogoutRequest;
-import com.project.shopapp.dto.request.RefreshRequest;
+import com.project.shopapp.constant.PredefinedRole;
+import com.project.shopapp.dto.request.*;
 import com.project.shopapp.dto.response.AuthenticationResponse;
 import com.project.shopapp.dto.response.IntrospectResponse;
 import com.project.shopapp.entity.InvalidatedToken;
+import com.project.shopapp.entity.Role;
 import com.project.shopapp.entity.User;
 import com.project.shopapp.exception.AppException;
 import com.project.shopapp.exception.ErrorCode;
 import com.project.shopapp.repository.InvalidatedTokenRepository;
+import com.project.shopapp.repository.RoleRepository;
 import com.project.shopapp.repository.UserRepository;
+import com.project.shopapp.repository.httpclient.OutboundGithubIdentityClient;
+import com.project.shopapp.repository.httpclient.OutboundGithubUserClient;
+import com.project.shopapp.repository.httpclient.OutboundIdentityClient;
+import com.project.shopapp.repository.httpclient.OutboundUserClient;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +46,12 @@ import org.springframework.util.CollectionUtils;
 @Slf4j
 public class AuthenticationService {
     UserRepository userRepository;
+    RoleRepository roleRepository;
     InvalidatedTokenRepository invalidatedTokenRepository;
+    OutboundIdentityClient outboundIdentityClient;
+    OutboundGithubIdentityClient outboundGithubIdentityClient;
+    OutboundUserClient outboundUserClient;
+    OutboundGithubUserClient outboundGithubUserClient;
 
     @NonFinal
     @Value("${jwt.signer-key}")
@@ -54,6 +64,34 @@ public class AuthenticationService {
     @NonFinal
     @Value("${jwt.refreshable-duration}")
     protected int REFRESHABLE_DURATION;
+
+    @NonFinal
+    @Value("${outbound.identity.google.client-id}")
+    protected String CLIENT_ID_GOOGLE;
+
+    @NonFinal
+    @Value("${outbound.identity.google.client-secret}")
+    protected String CLIENT_SECRET_GOOGLE;
+
+    @NonFinal
+    @Value("${outbound.identity.google.redirect-uri}")
+    protected String REDIRECT_URI_GOOGLE;
+
+    @NonFinal
+    protected final String GRANT_TYPE = "authorization_code";
+
+    @NonFinal
+    @Value("${outbound.identity.github.client-id}")
+    protected String CLIENT_ID_GITHUB;
+
+    @NonFinal
+    @Value("${outbound.identity.github.client-secret}")
+    protected String CLIENT_SECRET_GITHUB;
+
+    @NonFinal
+    @Value("${outbound.identity.github.redirect-uri}")
+    protected String REDIRECT_URI_GITHUB;
+
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         log.info("SIGNER KEY: {}", SIGNER_KEY);
@@ -72,6 +110,148 @@ public class AuthenticationService {
         var token = generateToken(user);
 
         return AuthenticationResponse.builder().token(token).build();
+    }
+
+    public AuthenticationResponse outboundAuthenticate(String code) {
+        var response = outboundIdentityClient.exchangeToken(ExchangeTokenRequest.builder()
+                .code(code)
+                .clientId(CLIENT_ID_GOOGLE)
+                .clientSecret(CLIENT_SECRET_GOOGLE)
+                .redirectUri(REDIRECT_URI_GOOGLE)
+                .grantType(GRANT_TYPE)
+                .build());
+
+        log.info("TOKEN RESPONSE: {}", response);
+
+        //get user info
+
+        var userInfo = outboundUserClient.getUserInfo("json", response.getAccessToken());
+
+        log.info("user info: {}", userInfo);
+
+        //onboard user
+
+        Set<Role> roles = new HashSet<>();
+        roleRepository.findByName(PredefinedRole.USER.name()).ifPresent(roles::add);
+
+        var user = userRepository.findByPhoneNumber(userInfo.getEmail()).orElseGet(
+                () -> userRepository.save(User.builder()
+                        .googleAccountId(userInfo.getId())
+                        .phoneNumber(userInfo.getEmail())
+                        .fullName(userInfo.getName())
+                        .isActive(true)
+                        .roles(roles)
+                        .build())
+        );
+
+        String token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
+    }
+
+    public AuthenticationResponse outboundAuthenticateGithub(String code) {
+        var response = outboundGithubIdentityClient
+                .exchangeToken(GithubExchangeTokenRequest.builder()
+                        .code(code)
+                        .clientId(CLIENT_ID_GITHUB)
+                        .clientSecret(CLIENT_SECRET_GITHUB)
+                        .redirectUri(REDIRECT_URI_GITHUB)
+                        .build());
+
+        log.info("Token response: {}", response);
+
+        var userInfo = outboundGithubUserClient.getUserInfo("Bearer " + response.getAccessToken());
+
+        log.info("User info: {}", userInfo);
+
+        Set<Role> roles = new HashSet<>();
+        roleRepository.findByName(PredefinedRole.USER.name()).ifPresent(roles::add);
+
+        var user = userRepository.findByGithubAccountId(userInfo.getId()).orElseGet(
+                () -> userRepository.save(User.builder()
+                        .githubAccountId(userInfo.getId())
+                        .fullName(userInfo.getName())
+                        .phoneNumber(userInfo.getLogin())
+                        .roles(roles)
+                        .isActive(true)
+                        .build())
+        );
+
+        String token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
+    }
+
+    public void linkGoogleAccount(String code) {
+        var context = SecurityContextHolder.getContext();
+        var phoneNumber = context.getAuthentication().getName();
+
+        var user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
+        );
+
+        if (StringUtils.hasText(user.getGoogleAccountId()))
+            throw new AppException(ErrorCode.ACCOUNT_LINKED_GOOGLE);
+
+        var response = outboundIdentityClient.exchangeToken(ExchangeTokenRequest.builder()
+                .code(code)
+                .clientId(CLIENT_ID_GOOGLE)
+                .clientSecret(CLIENT_SECRET_GOOGLE)
+                .redirectUri(REDIRECT_URI_GOOGLE)
+                .grantType(GRANT_TYPE)
+                .build());
+
+        log.info("token response: {}", response);
+
+        var userInfo = outboundUserClient.getUserInfo("json", response.getAccessToken());
+
+        log.info("user info: {}", userInfo);
+
+        user.setGoogleAccountId(userInfo.getId());
+
+        try {
+            userRepository.save(user);
+        }catch (DataIntegrityViolationException exception){
+            throw new AppException(ErrorCode.GOOGLE_ACCOUNT_EXISTED);
+        }
+
+    }
+
+    public void linkGithubAccount(String code) {
+        var context = SecurityContextHolder.getContext();
+        var phoneNumber = context.getAuthentication().getName();
+
+        var user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
+        );
+
+        if (StringUtils.hasText(user.getGithubAccountId()))
+            throw new AppException(ErrorCode.ACCOUNT_LINKED_GITHUB);
+
+        var response = outboundGithubIdentityClient.exchangeToken(GithubExchangeTokenRequest.builder()
+                .code(code)
+                .clientId(CLIENT_ID_GITHUB)
+                .clientSecret(CLIENT_SECRET_GITHUB)
+                .redirectUri(REDIRECT_URI_GITHUB)
+                .build());
+
+        log.info("token response: {}", response);
+
+        var userInfo = outboundGithubUserClient.getUserInfo("Bearer " + response.getAccessToken());
+
+        log.info("user info: {}", userInfo);
+
+        user.setGithubAccountId(userInfo.getId());
+
+        try {
+            userRepository.save(user);
+        }catch (DataIntegrityViolationException exception){
+            throw new AppException(ErrorCode.GITHUB_ACCOUNT_EXISTED);
+        }
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
@@ -170,11 +350,11 @@ public class AuthenticationService {
 
         var expiryTime = (isRefresh)
                 ? new Date(signedJWT
-                        .getJWTClaimsSet()
-                        .getIssueTime()
-                        .toInstant()
-                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
-                        .toEpochMilli())
+                .getJWTClaimsSet()
+                .getIssueTime()
+                .toInstant()
+                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                .toEpochMilli())
                 : signedJWT.getJWTClaimsSet().getExpirationTime();
 
         if (!(verified && expiryTime.after(new Date()))) throw new AppException(ErrorCode.UNAUTHENTICATED);
